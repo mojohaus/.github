@@ -6,6 +6,6 @@
         "Java"
     ],
     "filePatterns": [
-        "pom\\..+$",
+        "pom\\..+$"
     ]
 }
