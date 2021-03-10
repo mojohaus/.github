@@ -1,0 +1,11 @@
+{
+    "name": "Mojohaus OS Workflow",
+    "description": "Run with current Maven and JDK 8 on Linux, macOS and Windows.",
+    "iconName": "mojo_logo",
+    "categories": [
+        "Java"
+    ],
+    "filePatterns": [
+        "pom\\..+$",
+    ]
+}

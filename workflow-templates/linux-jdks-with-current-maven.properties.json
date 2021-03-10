@@ -1,0 +1,11 @@
+{
+    "name": "Mojohaus JDK Workflow",
+    "description": "Run with current Maven and multiple JDKs on Linux.",
+    "iconName": "mojo_logo",
+    "categories": [
+        "Java"
+    ],
+    "filePatterns": [
+        "pom\\..+$",
+    ]
+}
