@@ -1,0 +1,11 @@
+{
+    "name": "MojoHaus Shared Maven workflow from ASF Maven",
+    "description": "Shared action from ASF",
+    "iconName": "mojo_logo",
+    "categories": [
+        "Java"
+    ],
+    "filePatterns": [
+        "pom\\..+$"
+    ]
+}
