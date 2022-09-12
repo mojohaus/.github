@@ -57,7 +57,7 @@ exclude-labels:
   - skip-changelog
   - invalid
 
-change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-template: '- $TITLE ([#$NUMBER]($URL)) @$AUTHOR'
 
 template: |
   <!-- Optional: add a release summary here -->
