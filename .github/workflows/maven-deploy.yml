@@ -12,7 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Deploy:
+  deploy:
+    name: Deploy
 
     if: |
       github.event_name == 'push' && 
