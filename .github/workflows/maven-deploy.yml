@@ -1,5 +1,8 @@
 name: Deploy
 
+# clare all permissions for GITHUB_TOKEN
+permissions: {}
+
 on:
   workflow_call:
 
@@ -9,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  Deploy:
 
     if: |
       github.event_name == 'push' && 
@@ -38,4 +41,3 @@ jobs:
         env:
           MAVEN_DEPLOY_UID: ${{ secrets.MAVEN_DEPLOY_UID }}
           MAVEN_DEPLOY_PWD: ${{ secrets.MAVEN_DEPLOY_PWD }}
-
