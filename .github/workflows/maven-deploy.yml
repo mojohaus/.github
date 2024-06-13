@@ -25,12 +25,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
@@ -39,8 +39,12 @@ jobs:
           server-username: MAVEN_DEPLOY_UID
           server-password: MAVEN_DEPLOY_PWD
 
+      - name: Set up Maven
+        run:
+            mvn --errors --batch-mode --show-version org.apache.maven.plugins:maven-wrapper-plugin:3.3.2:wrapper "-Dmaven=3.9.7"
+
       - name: Publish Snapshot
-        run: mvn -e -B -V deploy -DskipTests
+        run: ./mvnw --errors --batch-mode --show-version deploy -DskipTests
         env:
           MAVEN_DEPLOY_UID: ${{ secrets.MAVEN_DEPLOY_UID }}
           MAVEN_DEPLOY_PWD: ${{ secrets.MAVEN_DEPLOY_PWD }}
