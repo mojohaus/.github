@@ -1,0 +1,78 @@
+# Publishes JUnit results from a completed CI run as a check run and, on pull
+# requests, as a comment.
+#
+# It runs from a `workflow_run` trigger so that pull requests from forks get
+# their results published without the build itself holding write permissions.
+#
+# The calling repository's CI workflow must upload two artifacts:
+#
+#   - the JUnit XML, e.g. target/surefire-reports/TEST*.xml and
+#     target/failsafe-reports/TEST*.xml, with `if: always()`
+#   - the event payload, ${{ github.event_path }}, named "Event File"
+#
+# and the caller looks like this:
+#
+#   name: Reports
+#   on:
+#     workflow_run:
+#       workflows: ["CI"]
+#       types: [completed]
+#   jobs:
+#     test-results:
+#       uses: mojohaus/.github/.github/workflows/test-results.yml@master
+
+name: Test Results
+
+on:
+  workflow_call:
+    inputs:
+      junit-files:
+        description: "Glob matching the JUnit XML files once the artifacts are extracted."
+        type: string
+        default: "artifacts/**/TEST*.xml"
+      event-file:
+        description: "Path to the uploaded event payload once the artifacts are extracted."
+        type: string
+        default: "artifacts/Event File/event.json"
+      comment-mode:
+        description: "How to comment on pull requests: always, changes, or off."
+        type: string
+        default: "always"
+      check-name:
+        description: "Name of the check run that carries the results."
+        type: string
+        default: "Test Results"
+
+permissions: {}
+
+jobs:
+  test-results:
+    name: Test Results
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion != 'skipped'
+
+    permissions:
+      # publish the check run carrying the results
+      checks: write
+      # comment on the pull request; not needed with comment-mode: off
+      pull-requests: write
+      # read the artifacts of the run that triggered this one
+      actions: read
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: artifacts
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: ${{ inputs.check-name }}
+          comment_mode: ${{ inputs.comment-mode }}
+          commit: ${{ github.event.workflow_run.head_sha }}
+          event_file: ${{ inputs.event-file }}
+          event_name: ${{ github.event.workflow_run.event }}
+          junit_files: ${{ inputs.junit-files }}
