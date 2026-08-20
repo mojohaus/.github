@@ -17,9 +17,17 @@
 #     workflow_run:
 #       workflows: ["CI"]
 #       types: [completed]
+#   permissions: {}
 #   jobs:
 #     test-results:
+#       permissions:
+#         checks: write
+#         pull-requests: write
+#         actions: read
 #       uses: mojohaus/.github/.github/workflows/test-results.yml@master
+#
+# The caller must grant those three permissions: a called workflow can only
+# narrow what the caller holds, never widen it.
 
 name: Test Results
 
