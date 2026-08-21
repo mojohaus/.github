@@ -1,68 +1,55 @@
-# Configuration for Release Drafter: https://github.com/toolmantim/release-drafter
+# Configuration for Release Drafter: https://github.com/release-drafter/release-drafter
+# Shared by every mojohaus repo via `_extends: .github`.
+#
+# Every label referenced here exists in labels.js. The reverse does not hold:
+# the priority: family, question, help wanted and the other triage labels
+# describe how an issue is handled, not a change worth listing. java and
+# github_actions are absent because Dependabot always applies dependencies
+# alongside them, and that is categorised.
+#
+# `categories` is an array, so a repo overriding it via _extends replaces the
+# whole array rather than appending to it.
 name-template: $RESOLVED_VERSION
 tag-template: $RESOLVED_VERSION
-version-template: '$MAJOR.$MINOR.$PATCH'
+version-template: $MAJOR.$MINOR.$PATCH
 
 filter-by-commitish: true
 
-# Emoji reference: https://gitmoji.carloscuesta.me/
 categories:
   - title: ":boom: Breaking changes"
-    labels: 
-      - breaking
+    labels: [breaking]
   - title: 🚨 Removed
-    labels:
-      - removed
-  - title: ":tada: Major features and improvements"
-    labels:
-      - major-enhancement
-      - major-rfe
-  - title: 🐛 Major bug fixes
-    labels:
-      - major-bug
-  - title: ⚠️ Deprecated
-    labels:
-      - deprecated
+    labels: [removed]
   - title: 🚀 New features and improvements
-    labels:
-      - enhancement
-      - feature
-      - rfe
+    labels: [enhancement]
   - title: 🐛 Bug Fixes
-    labels:
-      - bug
-      - fix
-      - bugfix
-      - regression
-  - title: ":construction_worker: Changes for plugin developers"
-    labels:
-      - developer 
+    labels: [bug]
   - title: 📝 Documentation updates
-    labels:
-      - documentation
-      - Documentation
+    labels: [documentation]
   - title: 👻 Maintenance
-    labels: 
-      - chore
-      - internal
-      - maintenance
+    labels: [maintenance]
   - title: 🔧 Build
-    labels:
-      - build
-  # Default label used by Dependabot
+    labels: [build]
+  # Dependabot applies this to most items in the org, so collapse it rather
+  # than let it bury everything else.
   - title: 📦 Dependency updates
-    labels:
-      - dependencies
-      - dependency-upgrade
-  - title: 🚦 Tests
-    labels: 
-      - test
-      - tests
+    labels: [dependencies]
+    collapse-after: 10
+
 exclude-labels:
   - reverted
-  - no-changelog
   - skip-changelog
-  - invalid
+
+# Derive the next version from the labels already applied. The previous config
+# always drafted a patch, so every minor release had to be retitled by hand.
+version-resolver:
+  major:
+    labels: [breaking]
+  minor:
+    labels: [enhancement, removed]
+  patch:
+    labels: [bug, documentation, maintenance, build, dependencies]
+  default: patch
 
 change-template: '- $TITLE ([#$NUMBER]($URL)) @$AUTHOR'
 
