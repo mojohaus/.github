@@ -9,6 +9,12 @@
 #
 # `categories` is an array, so a repo overriding it via _extends replaces the
 # whole array rather than appending to it.
+#
+# Each category's semver-increment derives the next version from the labels
+# already applied, so a PR labelled enhancement drafts a minor and a PR labelled
+# bug a patch. The previous config always drafted a patch, so every minor
+# release had to be retitled by hand. A PR with no categorised label drafts a
+# patch, release-drafter's own fallback.
 name-template: $RESOLVED_VERSION
 tag-template: $RESOLVED_VERSION
 version-template: $MAJOR.$MINOR.$PATCH
@@ -16,40 +22,44 @@ version-template: $MAJOR.$MINOR.$PATCH
 filter-by-commitish: true
 
 categories:
+  - type: pre-exclude
+    when:
+      labels: [reverted, skip-changelog]
   - title: ":boom: Breaking changes"
-    labels: [breaking]
+    semver-increment: major
+    when:
+      labels: [breaking]
   - title: 🚨 Removed
-    labels: [removed]
+    semver-increment: minor
+    when:
+      labels: [removed]
   - title: 🚀 New features and improvements
-    labels: [enhancement]
+    semver-increment: minor
+    when:
+      labels: [enhancement]
   - title: 🐛 Bug Fixes
-    labels: [bug]
+    semver-increment: patch
+    when:
+      labels: [bug]
   - title: 📝 Documentation updates
-    labels: [documentation]
+    semver-increment: patch
+    when:
+      labels: [documentation]
   - title: 👻 Maintenance
-    labels: [maintenance]
+    semver-increment: patch
+    when:
+      labels: [maintenance]
   - title: 🔧 Build
-    labels: [build]
+    semver-increment: patch
+    when:
+      labels: [build]
   # Dependabot applies this to most items in the org, so collapse it rather
   # than let it bury everything else.
   - title: 📦 Dependency updates
-    labels: [dependencies]
+    semver-increment: patch
     collapse-after: 10
-
-exclude-labels:
-  - reverted
-  - skip-changelog
-
-# Derive the next version from the labels already applied. The previous config
-# always drafted a patch, so every minor release had to be retitled by hand.
-version-resolver:
-  major:
-    labels: [breaking]
-  minor:
-    labels: [enhancement, removed]
-  patch:
-    labels: [bug, documentation, maintenance, build, dependencies]
-  default: patch
+    when:
+      labels: [dependencies]
 
 change-template: '- $TITLE ([#$NUMBER]($URL)) @$AUTHOR'
 
