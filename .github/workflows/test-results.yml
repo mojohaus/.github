@@ -58,6 +58,13 @@ jobs:
     name: Test Results
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion != 'skipped'
+    # A pull request from a branch in the same repository runs CI on both push and
+    # pull_request, so two runs of this workflow start for one commit. Neither
+    # finds the other's comment and both post one. Queued one after the other,
+    # the second updates the first comment instead.
+    concurrency:
+      group: test-results-${{ github.event.workflow_run.head_sha }}
+      cancel-in-progress: false
 
     permissions:
       # publish the check run carrying the results
