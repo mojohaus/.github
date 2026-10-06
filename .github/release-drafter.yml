@@ -1,20 +1,22 @@
 # Configuration for Release Drafter: https://github.com/release-drafter/release-drafter
 # Shared by every mojohaus repo via `_extends: .github`.
 #
-# Every label referenced here exists in labels.js. The reverse does not hold:
-# the priority: family, question, help wanted and the other triage labels
-# describe how an issue is handled, not a change worth listing. java and
-# github_actions are absent because Dependabot always applies dependencies
-# alongside them, and that is categorised.
+# Every label referenced here exists in labels.js. The reverse does not
+# hold and should not: the priority: family, question, help wanted and the
+# other triage labels are deliberately absent, because they describe an
+# issue's handling rather than a change worth listing in release notes.
+# java and github_actions are absent for a different reason - Dependabot
+# always applies dependencies alongside them, and that is categorised.
+# Note that `categories` is an array: a repo that overrides it via _extends
+# replaces the whole array rather than appending to it.
+# $RESOLVED_VERSION follows the semver-increment of each category, so a PR
+# labelled enhancement drafts a minor and a PR labelled bug drafts a patch. The
+# previous $NEXT_PATCH_VERSION always drafted a patch, which meant every minor
+# release in the org had to be retitled by hand before publishing. A PR with no
+# categorised label drafts a patch, release-drafter's own fallback.
 #
-# `categories` is an array, so a repo overriding it via _extends replaces the
-# whole array rather than appending to it.
-#
-# Each category's semver-increment derives the next version from the labels
-# already applied, so a PR labelled enhancement drafts a minor and a PR labelled
-# bug a patch. The previous config always drafted a patch, so every minor
-# release had to be retitled by hand. A PR with no categorised label drafts a
-# patch, release-drafter's own fallback.
+# Repos tag releases with the bare version; a repo that tags differently, such
+# as buildplan-maven-plugin with v<version>, overrides tag-template.
 name-template: $RESOLVED_VERSION
 tag-template: $RESOLVED_VERSION
 version-template: $MAJOR.$MINOR.$PATCH
@@ -53,8 +55,9 @@ categories:
     semver-increment: patch
     when:
       labels: [build]
-  # Dependabot applies this to most items in the org, so collapse it rather
-  # than let it bury everything else.
+  # Applied automatically by Dependabot to most labelled items in the org, so it
+  # is collapsed behind a summary line rather than being allowed to bury every
+  # other category.
   - title: 📦 Dependency updates
     semver-increment: patch
     collapse-after: 10
