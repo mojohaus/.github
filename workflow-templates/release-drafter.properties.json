@@ -1,0 +1,11 @@
+{
+    "name": "MojoHaus Release Drafter from ASF Maven",
+    "description": "Drafts the release notes from the merged pull requests, with the MojoHaus configuration",
+    "iconName": "mojo_logo",
+    "categories": [
+        "Java"
+    ],
+    "filePatterns": [
+        "pom\\..+$"
+    ]
+}
