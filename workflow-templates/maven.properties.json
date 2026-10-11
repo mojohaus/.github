@@ -1,6 +1,6 @@
 {
     "name": "MojoHaus Shared Maven workflow from ASF Maven",
-    "description": "Shared action from ASF",
+    "description": "Builds and tests on Linux, Windows and macOS with the shared ASF Maven workflow",
     "iconName": "mojo_logo",
     "categories": [
         "Java"
