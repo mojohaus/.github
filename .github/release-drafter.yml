@@ -74,10 +74,12 @@ group-changes:
 
 change-template: '- $TITLE ($NUMBERS) @$AUTHOR'
 
-# $CONTRIBUTORS lists the pull request authors and the authors and co-authors of their commits, people
-# before bots. A contributor whose pull request a maintainer carried is credited only if their commits
-# reach the branch: merge such a pull request with "Rebase and merge", or keep the Co-authored-by
-# trailers when squashing.
+# $CONTRIBUTORS lists the pull request authors and the authors and co-authors of their commits. A
+# contributor whose pull request a maintainer carried is credited only if their commits reach the
+# branch: merge such a pull request with "Rebase and merge", or keep the Co-authored-by trailers when
+# squashing. Dependabot is left out; the fallback covers a release made only of its updates.
+exclude-contributors: [dependabot]
+no-contributors-template: everyone who reported issues
 # $RESOLVED_TAG is the tag-template a repo sets, so the link includes its prefix.
 template: |
   <!-- Optional: add a release summary here -->
