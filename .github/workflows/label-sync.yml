@@ -4,15 +4,13 @@
 # the repository list read from the GitHub API instead of gitbox. Archived repos
 # are skipped.
 #
-# The scheduled run only reports drift and needs no credentials. Reconciling
+# Runs on demand. Without `apply` it only reports drift and needs no credentials. Reconciling
 # needs an optional LABEL_SYNC_TOKEN secret - a fine-grained PAT owned by the org
 # with `Issues: Read and write`, which only an org owner can add. Until one
 # exists the drift report still works.
 name: Label sync
 
 on:
-  schedule:
-    - cron: '0 6 * * 1'
   workflow_dispatch:
     inputs:
       apply:
