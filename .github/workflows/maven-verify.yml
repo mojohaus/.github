@@ -38,13 +38,13 @@ on:
       ff-goal:
         description: Goal of the fail-fast build.
         required: false
-        default: '-P run-its verify'
+        default: '-P "?run-its" verify'
         type: string
 
       verify-goal:
         description: Goal of the matrix builds.
         required: false
-        default: '-P run-its verify'
+        default: '-P "?run-its" verify'
         type: string
 
       verify-fail-fast:
