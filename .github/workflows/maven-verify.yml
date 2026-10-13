@@ -2,14 +2,26 @@
 # MojoHaus plugin shares, so a repository passes only what it does differently.
 #
 # Only the inputs MojoHaus repositories set are exposed here, and each default below must match
-# the one in maven-verify.yml@v5. A repository that needs another input (jdk-matrix, os-matrix,
-# maven-matrix) calls apache/maven-gh-actions-shared directly.
+# the one in maven-verify.yml@v5: when v5 changes a default, such as the JDK matrix, change it here
+# too, or MojoHaus keeps the old one.
 
 name: Verify
 
 on:
   workflow_call:
     inputs:
+      os-matrix:
+        description: Operating systems to build on, as a JSON array.
+        required: false
+        default: '[ "ubuntu-latest", "windows-latest", "macos-latest" ]'
+        type: string
+
+      jdk-matrix:
+        description: JDKs to build with, as a JSON array.
+        required: false
+        default: '[ "21", "25", "8" ]'
+        type: string
+
       matrix-exclude:
         description: >-
           Matrix entries to skip, as a JSON array. By default Linux runs every JDK, Windows the oldest
@@ -64,6 +76,8 @@ jobs:
       maven4-enabled: true
       # only the default branch saves the Maven and JDK caches; other branches and pull requests restore them
       cache-save-default-branch-only: true
+      os-matrix: ${{ inputs.os-matrix }}
+      jdk-matrix: ${{ inputs.jdk-matrix }}
       matrix-exclude: ${{ inputs.matrix-exclude }}
       ff-goal: ${{ inputs.ff-goal }}
       verify-goal: ${{ inputs.verify-goal }}
