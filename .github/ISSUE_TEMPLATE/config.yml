@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/mojohaus/.github/blob/master/SECURITY.md
+    about: Please report vulnerabilities privately, not as a public issue.
+  - name: Ask a question about using a plugin
+    url: https://www.mojohaus.org/mailing-lists.html
+    about: General Maven and plugin usage questions get the widest audience on the Maven users list.
+  - name: Plugin documentation
+    url: https://www.mojohaus.org/plugins.html
+    about: Every plugin's site, with its goals, parameters and examples.
