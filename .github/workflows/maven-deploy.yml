@@ -1,6 +1,6 @@
 name: Deploy
 
-# clare all permissions for GITHUB_TOKEN
+# declare no permissions for GITHUB_TOKEN
 permissions: {}
 
 on:
@@ -16,8 +16,8 @@ jobs:
     name: Deploy
 
     if: |
-      github.event_name == 'push' && 
-      github.repository_owner == 'mojohaus' && 
+      github.event_name == 'push' &&
+      github.repository_owner == 'mojohaus' &&
       github.ref == 'refs/heads/master' &&
       !startsWith(github.event.head_commit.message , '[maven-release-plugin] prepare release')
 
@@ -32,19 +32,16 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
-          server-id: ossrh-snapshots
+          # the snapshot repository id in mojo-parent's distributionManagement
+          server-id: sonatype-central-portal
           server-username: MAVEN_DEPLOY_UID
           server-password: MAVEN_DEPLOY_PWD
 
-      - name: Set up Maven
-        run:
-            mvn --errors --batch-mode --show-version org.apache.maven.plugins:maven-wrapper-plugin:3.3.2:wrapper "-Dmaven=3.9.7"
-
       - name: Publish Snapshot
-        run: ./mvnw --errors --batch-mode --show-version deploy -DskipTests
+        run: mvn --errors --batch-mode --show-version deploy -DskipTests
         env:
           MAVEN_DEPLOY_UID: ${{ secrets.MAVEN_DEPLOY_UID }}
           MAVEN_DEPLOY_PWD: ${{ secrets.MAVEN_DEPLOY_PWD }}
