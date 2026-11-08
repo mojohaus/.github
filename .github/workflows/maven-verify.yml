@@ -65,6 +65,14 @@ on:
         default: 30
         type: number
 
+      maven4-enabled:
+        description: >-
+          Also build with Maven 4. Turn it off for a plugin that still targets Maven 3 only, such as one
+          built on the Maven 2 compatibility layer.
+        required: false
+        default: true
+        type: boolean
+
 jobs:
   verify:
     name: Verify
@@ -73,7 +81,7 @@ jobs:
       # Temurin comes from the runners' tool cache; Zulu would be downloaded or restored from the cache
       jdk-distribution-matrix: '[ "temurin" ]'
       ff-jdk-distribution: 'temurin'
-      maven4-enabled: true
+      maven4-enabled: ${{ inputs.maven4-enabled }}
       # only the default branch saves the Maven and JDK caches; other branches and pull requests restore them
       cache-save-default-branch-only: true
       os-matrix: ${{ inputs.os-matrix }}
