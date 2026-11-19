@@ -76,6 +76,11 @@ on:
 jobs:
   verify:
     name: Verify
+    # Same-repo PRs are already built by the push event; their pull_request run
+    # is a duplicate. Skip the reusable-workflow call at this level so the checks
+    # UI shows one named "Verify" check instead of nested jobs whose matrix/needs
+    # expressions cannot be rendered when the upstream setup job is skipped.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
     uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v5
     with:
       # Temurin comes from the runners' tool cache; Zulu would be downloaded or restored from the cache
