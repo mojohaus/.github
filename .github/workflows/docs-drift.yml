@@ -1,0 +1,53 @@
+# Weekly read-only audit of the known documentation drift patterns that the
+# org-wide sweep kept finding. Opens (or updates) one issue in this repo so
+# findings are visible without giving this workflow write access to every repo.
+name: Docs drift
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 1'
+
+permissions: {}
+
+jobs:
+  audit:
+    name: Report documentation drift
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/check-docs-drift.py > drift.md
+          cat drift.md
+
+      - name: Publish findings
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('drift.md', 'utf8').trim();
+            const { owner, repo } = context.repo;
+            const title = 'Documentation drift across MojoHaus repos';
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', per_page: 100
+            });
+            const existing = issues.find(issue => issue.title === title);
+            const footer = `\n\n_Updated ${new Date().toISOString()} by the docs-drift workflow._`;
+            if (existing) {
+              await github.rest.issues.update({
+                owner, repo, issue_number: existing.number, body: body + footer
+              });
+            } else {
+              await github.rest.issues.create({
+                owner, repo, title, body: body + footer, labels: ['documentation']
+              });
+            }
