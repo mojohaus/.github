@@ -1,0 +1,18 @@
+# Adds a release-drafter category label to new pull requests that have none.
+# Install alongside the MojoHaus Maven verify workflow so release notes are
+# generated from labelled PRs without maintainers having to remember labels.
+
+name: PR Labels
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  label:
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: mojohaus/.github/.github/workflows/pr-labeler.yml@master

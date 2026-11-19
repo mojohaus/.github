@@ -1,0 +1,11 @@
+{
+    "name": "MojoHaus PR release-note labels",
+    "description": "Applies a release-drafter category label to pull requests that do not have one yet",
+    "iconName": "mojo_logo",
+    "categories": [
+        "Java"
+    ],
+    "filePatterns": [
+        "pom\\..+$"
+    ]
+}
