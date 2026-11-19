@@ -1,0 +1,53 @@
+# Weekly read-only link check over public MojoHaus documentation. Findings are
+# published as an issue here rather than failing any repository's build, since
+# third-party sites go down independently of our code.
+name: Link check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 6 * * 1'
+
+permissions: {}
+
+jobs:
+  check:
+    name: Check documentation links
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run link check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/check-links.py > links.md
+          cat links.md
+
+      - name: Publish findings
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('links.md', 'utf8').trim();
+            const { owner, repo } = context.repo;
+            const title = 'Broken links in MojoHaus documentation';
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', per_page: 100
+            });
+            const existing = issues.find(issue => issue.title === title);
+            const footer = `\n\n_Updated ${new Date().toISOString()} by the link-check workflow._`;
+            if (existing) {
+              await github.rest.issues.update({
+                owner, repo, issue_number: existing.number, body: body + footer
+              });
+            } else {
+              await github.rest.issues.create({
+                owner, repo, title, body: body + footer, labels: ['documentation']
+              });
+            }
