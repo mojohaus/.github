@@ -1,0 +1,50 @@
+# Detects drift between the defaults in the MojoHaus maven-verify wrapper and
+# the upstream apache/maven-gh-actions-shared@v5 workflow it delegates to.
+name: Wrapper defaults
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 6 * * 1'
+
+permissions: {}
+
+jobs:
+  check:
+    name: Compare defaults with upstream v5
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Compare
+        run: |
+          ruby scripts/check-wrapper-defaults.rb > drift.md
+          cat drift.md
+
+      - name: Publish findings
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('drift.md', 'utf8').trim();
+            const { owner, repo } = context.repo;
+            const title = 'maven-verify wrapper defaults drift from upstream v5';
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', per_page: 100
+            });
+            const existing = issues.find(issue => issue.title === title);
+            const footer = `\n\n_Updated ${new Date().toISOString()} by the wrapper-defaults workflow._`;
+            if (existing) {
+              await github.rest.issues.update({
+                owner, repo, issue_number: existing.number, body: body + footer
+              });
+            } else if (!body.includes('All ')) {
+              await github.rest.issues.create({
+                owner, repo, title, body: body + footer, labels: ['build']
+              });
+            }
