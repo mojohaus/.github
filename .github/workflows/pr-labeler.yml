@@ -1,0 +1,84 @@
+# Applies a release-drafter category label to pull requests that have none.
+#
+# The org's release notes are generated from labels (see release-drafter.yml).
+# A PR with no categorised label still drafts a patch, but it lands in the
+# unlabelled fallback and is easy to miss. This workflow adds a best-effort
+# label from the changed paths, and never overrides a label a human chose.
+#
+# Install in a repository with:
+#
+#   name: PR Labels
+#   on:
+#     pull_request_target:
+#       types: [opened, synchronize, reopened]
+#   permissions: {}
+#   jobs:
+#     label:
+#       permissions:
+#         contents: read
+#         pull-requests: write
+#       uses: mojohaus/.github/.github/workflows/pr-labeler.yml@master
+
+name: PR labels
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  label:
+    name: Apply release-note label
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      # pull_request_target checks out the base branch, never the PR head:
+      # no untrusted code from the PR is executed here.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Label from changed paths
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.pull_request.number;
+            const CATEGORIES = new Set([
+              'breaking', 'removed', 'enhancement', 'bug',
+              'documentation', 'maintenance', 'build', 'dependencies'
+            ]);
+
+            const current = await github.paginate(github.rest.issues.listLabelsOnIssue, {
+              owner, repo, issue_number: pull_number, per_page: 100
+            });
+            const names = current.map(label => label.name);
+            // A deliberate human choice always wins.
+            if (names.some(name => CATEGORIES.has(name))) {
+              core.info('PR already has a release-note label; leaving it unchanged.');
+              return;
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner, repo, pull_number, per_page: 100
+            });
+            const paths = files.map(file => file.filename);
+
+            let label = 'maintenance';
+            if (paths.some(path =>
+                  path.endsWith('.md') || path.endsWith('.adoc') ||
+                  path.startsWith('src/site/') || path === 'README.md' ||
+                  path === 'AGENTS.md' || path === 'CONTRIBUTING.md')) {
+              label = 'documentation';
+            } else if (paths.some(path =>
+                  path === 'pom.xml' || path.startsWith('.github/') ||
+                  path.startsWith('src/it/') || path.startsWith('src/it-repo/') ||
+                  path.endsWith('.yml') || path.endsWith('.yaml') ||
+                  path.endsWith('.xml') || path.endsWith('.sh'))) {
+              label = 'build';
+            }
+
+            await github.rest.issues.addLabels({ owner, repo, issue_number: pull_number, labels: [label] });
+            core.info(`Applied label: ${label}`);
