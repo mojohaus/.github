@@ -74,8 +74,40 @@ on:
         type: boolean
 
 jobs:
+  matrix:
+    name: Matrix
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      exclude: ${{ steps.matrix.outputs.exclude }}
+      include: ${{ steps.matrix.outputs.include }}
+    steps:
+      # The Linux runners have no JDK 8 in the tool cache, and the Temurin 8 download fails now and
+      # then (HTTP 403, checksum mismatch): build JDK 8 on Linux with Zulu. Windows keeps its cached Temurin 8.
+      - id: matrix
+        env:
+          OS_MATRIX: ${{ inputs.os-matrix }}
+          JDK_MATRIX: ${{ inputs.jdk-matrix }}
+          MATRIX_EXCLUDE: ${{ inputs.matrix-exclude }}
+        run: |
+          jq -cn --argjson oses "$OS_MATRIX" --argjson jdks "$JDK_MATRIX" --argjson dists '["temurin"]' \
+            --argjson exclude "$MATRIX_EXCLUDE" --argjson include '[]' '
+            ([$oses[] | select(startswith("ubuntu"))][0]) as $os
+            | ([$jdks[] | select(tostring == "8")][0]) as $jdk
+            | if $os == null or $jdk == null or ($dists | index("temurin")) == null
+                 or any($exclude[]; (keys - ["os", "jdk", "distribution"] | length) == 0
+                        and (.os // $os) == $os and ((.jdk // $jdk) | tostring) == "8"
+                        and (.distribution // "temurin") == "temurin")
+              then {exclude: $exclude, include: $include}
+              else {exclude: ($exclude + [{os: $os, jdk: $jdk, distribution: "temurin"}]),
+                    include: ($include + [{os: $os, jdk: $jdk, distribution: "zulu"}])}
+              end
+            | "exclude=\(.exclude | tojson)\ninclude=\(.include | tojson)"' -r | tee -a "$GITHUB_OUTPUT"
+
   verify:
     name: Verify
+    needs: matrix
     # Same-repo PRs are already built by the push event; their pull_request run
     # is a duplicate. Skip the reusable-workflow call at this level so the checks
     # UI shows one named "Verify" check instead of nested jobs whose matrix/needs
@@ -86,12 +118,17 @@ jobs:
       # Temurin comes from the runners' tool cache; Zulu would be downloaded or restored from the cache
       jdk-distribution-matrix: '[ "temurin" ]'
       ff-jdk-distribution: 'temurin'
+      # no extra toolchain JDKs: each job registers only its own JDK in toolchains.xml, so macOS, which
+      # caches no JDK, downloads one instead of five
+      jdk-toolchain: ''
+      ff-jdk-toolchain: ''
       maven4-enabled: ${{ inputs.maven4-enabled }}
       # only the default branch saves the Maven and JDK caches; other branches and pull requests restore them
       cache-save-default-branch-only: true
       os-matrix: ${{ inputs.os-matrix }}
       jdk-matrix: ${{ inputs.jdk-matrix }}
-      matrix-exclude: ${{ inputs.matrix-exclude }}
+      matrix-exclude: ${{ needs.matrix.outputs.exclude }}
+      matrix-include: ${{ needs.matrix.outputs.include }}
       ff-goal: ${{ inputs.ff-goal }}
       verify-goal: ${{ inputs.verify-goal }}
       verify-fail-fast: ${{ inputs.verify-fail-fast }}
