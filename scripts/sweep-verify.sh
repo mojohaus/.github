@@ -3,11 +3,11 @@
 # MojoHaus Maven repository. Run from the repository root on a working branch.
 #
 #   # before editing:
-#   .github/scripts/sweep-verify.sh --record-baseline ExecMojoTest
+#   scripts/sweep-verify.sh --record-baseline ExecMojoTest
 #   # -> prints a baseline file path, e.g. /tmp/sweep-baseline-ExecMojoTest.txt
 #
 #   # after editing, with that path:
-#   .github/scripts/sweep-verify.sh --test-class ExecMojoTest \
+#   scripts/sweep-verify.sh --test-class ExecMojoTest \
 #       --baseline /tmp/sweep-baseline-ExecMojoTest.txt
 #
 # It never resets, checks out or discards files: a dirty tree is a hard stop.
@@ -15,7 +15,14 @@
 # the per-class surefire counts changed.
 set -euo pipefail
 
-JAVA_HOME="${JAVA_21_HOME:-/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home}"
+# Use the caller's JAVA_HOME; without one, derive it from the java on the PATH.
+if [ -z "${JAVA_HOME:-}" ]; then
+  if ! command -v java >/dev/null 2>&1; then
+    echo "JAVA_HOME is not set and no java was found on the PATH" >&2
+    exit 2
+  fi
+  JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+fi
 export JAVA_HOME
 MODE=""
 TEST_CLASS=""
