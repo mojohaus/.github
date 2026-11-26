@@ -77,11 +77,6 @@ A red build is not always a bad change. These failures recur across the org and 
 
 Read the failed job log before calling anything flaky. If the failure is one of the above, report it and re-run; if it comes from your change, add a follow-up commit. A skipped check is not a failure: GitHub reports skipped jobs as successful, even when required.
 
-## Repository quirks
-
-- `versions` has several long-lived `versions-*` worktrees, and `master` is checked out in one of them. Automation must scan it through a detached worktree at `origin/master` and must never reset those worktrees.
-- Several repositories have `agent/*` branches from maintenance sweeps. Rebase onto the current remote default before branching, and stage tracked files only (`git add -u`).
-
 ## For maintainers
 
 The release steps are in [Performing a Release](https://www.mojohaus.org/development/performing-a-release.html) and in the [mojo-parent README](https://github.com/mojohaus/mojo-parent#releasing). The release checklist is owned by the MojoHaus maintainers and reviewed annually; the next scheduled review is November 2027.
