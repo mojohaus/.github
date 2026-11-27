@@ -24,6 +24,8 @@ if [ -z "${JAVA_HOME:-}" ]; then
   JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
 fi
 export JAVA_HOME
+echo "==> JAVA_HOME=$JAVA_HOME"
+"$JAVA_HOME/bin/java" -version 2>&1 | sed 's/^/==> /'
 MODE=""
 TEST_CLASS=""
 BASELINE=""
